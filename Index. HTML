@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SmartAbsensi - Absensi Siswa</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+header {
+  background: #174b8a;
+  color: white;
+  padding: 22px 18px;
+}
+
+header h2 { margin-bottom: 6px; }
+header p { font-size: 13px; opacity: .85; }
+
+nav {
+  display: flex;
+  overflow-x: auto;
+  background: white;
+  padding: 10px;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  box-shadow: 0 2px 5px #0001;
+}
+
+nav button {
+  border: none;
+  padding: 11px 14px;
+  border-radius: 8px;
+  background: #e2e8f0;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+nav button.active {
+  background: #174b8a;
+  color: white;
+}
+
+.container {
+  max-width: 950px;
+  margin: auto;
+  padding: 18px;
+}
+
+.page { display: none; }
+.page.active { display: block; }
+
+h3 { margin-bottom: 15px; }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px #0000000a;
+}
+
+.card p {
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 9px;
+}
+
+.card h2 {
+  font-size: 27px;
+}
+
+.blue { color: #2563eb; }
+.green { color: #16a34a; }
+.orange { color: #d97706; }
+.red { color: #dc2626; }
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  margin: 7px 0 13px;
+  background: white;
+  font-size: 14px;
+}
+
+button {
+  cursor: pointer;
+}
+
+.btn {
+  border: none;
+  padding: 11px 15px;
+  border-radius: 8px;
+  color: white;
+  background: #2563eb;
+  margin: 3px 0;
+}
+
+.btn-green { background: #16a34a; }
+.btn-red { background: #dc2626; }
+.btn-gray { background: #64748b; }
+
+.table-wrap {
+  overflow-x: auto;
+  background: white;
+  border-radius: 10px;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 480px;
+}
+
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  font-size: 13px;
+}
+
+th {
+  background: #eff6ff;
+}
+
+.status {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 20px;
+  font-size: 12px;
+  background: #e2e8f0;
+}
+
+.Hadir { color: #15803d; background: #dcfce7; }
+.Izin { color: #a16207; background: #fef9c3; }
+.Sakit { color: #1d4ed8; background: #dbeafe; }
+.Alpa { color: #b91c1c; background: #fee2e2; }
+
+.form-box {
+  background: white;
+  padding: 18px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+}
+
+.empty {
+  padding: 25px;
+  text-align: center;
+  color: #64748b;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  color: #64748b;
+  font-size: 12px;
+}
+
+@media(min-width: 650px) {
+  .stats { grid-template-columns: repeat(4, 1fr); }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h2>🎓 SmartAbsensi</h2>
+  <p>Sistem Informasi Absensi Siswa</p>
+</header>
+
+<nav>
+  <button class="active" onclick="showPage('dashboard',this)">Dashboard</button>
+  <button onclick="showPage('siswa',this)">Data Siswa</button>
+  <button onclick="showPage('absensi',this)">Absensi</button>
+  <button onclick="showPage('riwayat',this)">Riwayat</button>
+  <button onclick="showPage('laporan',this)">Laporan</button>
+</nav>
+
+<div class="container">
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="page active">
+  <h3>Dashboard</h3>
+
+  <div class="stats">
+    <div class="card">
+      <p>Total Siswa</p>
+      <h2 class="blue" id="totalSiswa">0</h2>
+    </div>
+    <div class="card">
+      <p>Hadir Hari Ini</p>
+      <h2 class="green" id="totalHadir">0</h2>
+    </div>
+    <div class="card">
+      <p>Izin / Sakit</p>
+      <h2 class="orange" id="totalIzin">0</h2>
+    </div>
+    <div class="card">
+      <p>Alpa</p>
+      <h2 class="red" id="totalAlpa">0</h2>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Selamat Datang!</h3>
+    <p>Gunakan SmartAbsensi untuk mengelola data siswa dan mencatat kehadiran secara digital.</p>
+    <br>
+    <p><b>Tanggal:</b> <span id="tanggalSekarang"></span></p>
+  </div>
+</section>
+
+<!-- DATA SISWA -->
+<section id="siswa" class="page">
+  <h3>Data Siswa</h3>
+
+  <div class="form-box">
+    <h3>Tambah Siswa</h3>
+
+    <label>Nama Siswa</label>
+    <input id="nama" placeholder="Masukkan nama siswa">
+
+    <label>NIS</label>
+    <input id="nis" placeholder="Masukkan NIS">
+
+    <label>Kelas</label>
+    <input id="kelas" placeholder="Contoh: X RPL 1">
+
+    <button class="btn" onclick="tambahSiswa()">+ Simpan Siswa</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>NIS</th>
+          <th>Nama</th>
+          <th>Kelas</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tabelSiswa"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ABSENSI -->
+<section id="absensi" class="page">
+  <h3>Absensi Harian</h3>
+
+  <div class="form-box">
+    <label>Tanggal Absensi</label>
+    <input type="date" id="tanggalAbsen">
+
+    <button class="btn" onclick="tampilkanFormAbsen()">Tampilkan Siswa</button>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Nama Siswa</th>
+          <th>Status Kehadiran</th>
+        </tr>
+      </thead>
+      <tbody id="formAbsen"></tbody>
+    </table>
+  </div>
+
+  <br>
+  <button class="btn btn-green" onclick="simpanAbsensi()">Simpan Absensi</button>
+</section>
+
+<!-- RIWAYAT -->
+<section id="riwayat" class="page">
+  <h3>Riwayat Absensi</h3>
+
+  <label>Filter Tanggal</label>
+  <input type="date" id="filterTanggal" onchange="tampilkanRiwayat()">
+
+  <button class="btn btn-gray" onclick="resetFilter()">Semua Tanggal</button>
+
+  <br><br>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th>NIS</th>
+          <th>Nama</th>
+          <th>Kelas</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tabelRiwayat"></tbody>
+    </table>
+  </div>
+</section>
+
+<!-- LAPORAN -->
+<section id="laporan" class="page">
+  <h3>Laporan Kehadiran</h3>
+
+  <div class="form-box">
+    <label>Pilih Tanggal</label>
+    <input type="date" id="tanggalLaporan"
+      onchange="tampilkanLaporan()">
+
+    <button class="btn" onclick="exportCSV()">Download CSV</button>
+  </div>
+
+  <div class="stats">
+    <div class="card">
+      <p>Hadir</p>
+      <h2 class="green" id="lapHadir">0</h2>
+    </div>
+    <div class="card">
+      <p>Izin</p>
+      <h2 class="orange" id="lapIzin">0</h2>
+    </div>
+    <div class="card">
+      <p>Sakit</p>
+      <h2 class="blue" id="lapSakit">0</h2>
+    </div>
+    <div class="card">
+      <p>Alpa</p>
+      <h2 class="red" id="lapAlpa">0</h2>
+    </div>
+  </div>
+
+  <div class="card">
+    <p>Persentase Kehadiran</p>
+    <h2 id="persentase" class="green">0%</h2>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  SmartAbsensi © 2026<br>
+  Project Ujian Tengah Semester
+</footer>
+
+<script>
+
+// DATABASE SEDERHANA
+let siswa = JSON.parse(localStorage.getItem("siswa")) || [
+  {nis:"1001", nama:"Andi Saputra", kelas:"X RPL 1"},
+  {nis:"1002", nama:"Budi Santoso", kelas:"X RPL 1"},
+  {nis:"1003", nama:"Citra Amelia", kelas:"X RPL 2"}
+];
+
+let absensi = JSON.parse(localStorage.getItem("absensi")) || [];
+
+function simpanDatabase() {
+  localStorage.setItem("siswa", JSON.stringify(siswa));
+  localStorage.setItem("absensi", JSON.stringify(absensi));
+}
+
+function tanggalHariIni() {
+  const d = new Date();
+  const offset = d.getTimezoneOffset() * 60000;
+  return new Date(d.getTime() - offset)
+    .toISOString().split("T")[0];
+}
+
+// NAVIGASI
+function showPage(id, btn) {
+  document.querySelectorAll(".page").forEach(p => {
+    p.classList.remove("active");
+  });
+
+  document.getElementById(id).classList.add("active");
+
+  document.querySelectorAll("nav button").forEach(b => {
+    b.classList.remove("active");
+  });
+
+  btn.classList.add("active");
+
+  refresh();
+}
+
+// TAMBAH SISWA
+function tambahSiswa() {
+  const nama = document.getElementById("nama").value.trim();
+  const nis = document.getElementById("nis").value.trim();
+  const kelas = document.getElementById("kelas").value.trim();
+
+  if (!nama || !nis || !kelas) {
+    alert("Semua data harus diisi!");
+    return;
+  }
+
+  if (siswa.some(s => s.nis === nis)) {
+    alert("NIS sudah terdaftar!");
+    return;
+  }
+
+  siswa.push({nis, nama, kelas});
+  simpanDatabase();
+
+  document.getElementById("nama").value = "";
+  document.getElementById("nis").value = "";
+  document.getElementById("kelas").value = "";
+
+  refresh();
+  alert("Data siswa berhasil ditambahkan!");
+}
+
+// HAPUS SISWA
+function hapusSiswa(nis) {
+  if (!confirm("Yakin ingin menghapus siswa ini?")) return;
+
+  siswa = siswa.filter(s => s.nis !== nis);
+  simpanDatabase();
+  refresh();
+}
+
+// TAMPILKAN DATA SISWA
+function tampilkanSiswa() {
+  const tbody = document.getElementById("tabelSiswa");
+
+  tbody.innerHTML = "";
+
+  siswa.forEach((s, i) => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${i+1}</td>
+        <td>${escapeHTML(s.nis)}</td>
+        <td>${escapeHTML(s.nama)}</td>
+        <td>${escapeHTML(s.kelas)}</td>
+        <td>
+          <button class="btn btn-red"
+            onclick="hapusSiswa('${encodeURIComponent(s.nis)}')">
+            Hapus
+          </button>
+        </td>
+      </tr>`;
+  });
+
+  if (siswa.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Belum ada siswa</td></tr>';
+  }
+}
+
+// Menghindari input tampil sebagai HTML
+function escapeHTML(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&":"&amp;", "<":"&lt;", ">":"&gt;",
+    '"':"&quot;", "'":"&#39;"
+  })[c]);
+}
+
+// FORM ABSENSI
+function tampilkanFormAbsen() {
+  const tanggal = document.getElementById("tanggalAbsen").value;
+  const tbody = document.getElementById("formAbsen");
+
+  if (!tanggal) {
+    alert("Pilih tanggal terlebih dahulu!");
+    return;
+  }
+
+  tbody.innerHTML = "";
+
+  siswa.forEach(s => {
+    const dataLama = absensi.find(a =>
+      a.nis === s.nis && a.tanggal === tanggal
+    );
+
+    const status = dataLama ? dataLama.status : "Hadir";
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${escapeHTML(s.nama)}</td>
+        <td>
+          <select class="statusInput"
+            data-nis="${encodeURIComponent(s.nis)}">
+            <option ${status==="Hadir"?"selected":""}>Hadir</option>
+            <option ${status==="Izin"?"selected":""}>Izin</option>
+            <option ${status==="Sakit"?"selected":""}>Sakit</option>
+            <option ${status==="Alpa"?"selected":""}>Alpa</option>
+          </select>
+        </td>
+      </tr>`;
+  });
+
+  if (siswa.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="2" class="empty">Tambahkan siswa terlebih dahulu</td></tr>';
+  }
+}
+
+// SIMPAN ABSENSI
+function simpanAbsensi() {
+  const tanggal = document.getElementById("tanggalAbsen").value;
+
+  if (!tanggal) {
+    alert("Pilih tanggal terlebih dahulu!");
+    return;
+  }
+
+  const inputs = document.querySelectorAll(".statusInput");
+
+  if (inputs.length === 0) {
+    alert("Tidak ada siswa untuk diabsen!");
+    return;
+  }
+
+  inputs.forEach(input => {
+    const nis = decodeURIComponent(input.dataset.nis);
+    const status = input.value;
+
+    const index = absensi.findIndex(a =>
+      a.nis === nis && a.tanggal === tanggal
+    );
+
+    const data = {tanggal, nis, status};
+
+    if (index >= 0) {
+      absensi[index] = data;
+    } else {
+      absensi.push(data);
+    }
+  });
+
+  simpanDatabase();
+  refresh();
+
+  alert("Absensi berhasil disimpan!");
+}
+
+// RIWAYAT ABSENSI
+function tampilkanRiwayat() {
+  const filter = document.getElementById("filterTanggal").value;
+
+  const tbody = document.getElementById("tabelRiwayat");
+  tbody.innerHTML = "";
+
+  const data = absensi.filter(a =>
+    !filter || a.tanggal === filter
+  );
+
+  data.sort((a,b) => b.tanggal.localeCompare(a.tanggal));
+
+  data.forEach(a => {
+    const s = siswa.find(x => x.nis === a.nis);
+    if (!s) return;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${a.tanggal}</td>
+        <td>${escapeHTML(s.nis)}</td>
+        <td>${escapeHTML(s.nama)}</td>
+        <td>${escapeHTML(s.kelas)}</td>
+        <td><span class="status ${a.status}">${a.status}</span></td>
+      </tr>`;
+  });
+
+  if (!data.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="empty">Belum ada riwayat absensi</td></tr>';
+  }
+}
+
+function resetFilter() {
+  document.getElementById("filterTanggal").value = "";
+  tampilkanRiwayat();
+}
+
+// LAPORAN
+function tampilkanLaporan() {
+  const tanggal = document.getElementById("tanggalLaporan").value;
+
+  const data = absensi.filter(a => a.tanggal === tanggal);
+
+  const hitung = status =>
+    data.filter(a => a.status === status).length;
+
+  const hadir = hitung("Hadir");
+  const izin = hitung("Izin");
+  const sakit = hitung("Sakit");
+  const alpa = hitung("Alpa");
+
+  document.getElementById("lapHadir").textContent = hadir;
+  document.getElementById("lapIzin").textContent = izin;
+  document.getElementById("lapSakit").textContent = sakit;
+  document.getElementById("lapAlpa").textContent = alpa;
+
+  const total = hadir + izin + sakit + alpa;
+
+  const persen = total
+    ? Math.round(hadir / total * 100)
+    : 0;
+
+  document.getElementById("persentase").textContent = persen + "%";
+}
+
+// EXPORT CSV
+function exportCSV() {
+  const tanggal = document.getElementById("tanggalLaporan").value;
+
+  if (!tanggal) {
+    alert("Pilih tanggal laporan!");
+    return;
+  }
+
+  const data = absensi.filter(a => a.tanggal === tanggal);
+
+  if (!data.length) {
+    alert("Belum ada data absensi pada tanggal tersebut!");
+    return;
+  }
+
+  let csv = "Tanggal,NIS,Nama,Kelas,Status\n";
+
+  data.forEach(a => {
+    const s = siswa.find(x => x.nis === a.nis);
+    if (s) {
+      const quote = v => '"' + String(v).replace(/"/g, '""') + '"';
+      csv += [
+        a.tanggal, s.nis, s.nama, s.kelas, a.status
+      ].map(quote).join(",") + "\n";
+    }
+  });
+
+  const blob = new Blob(["\uFEFF" + csv], {
+    type: "text/csv;charset=utf-8;"
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "Laporan-Absensi-" + tanggal + ".csv";
+  link.click();
+
+  URL.revokeObjectURL(url);
+}
+
+// DASHBOARD
+function updateDashboard() {
+  const hari = tanggalHariIni();
+
+  const data = absensi.filter(a => a.tanggal === hari);
+
+  const hitung = status =>
+    data.filter(a => a.status === status).length;
+
+  document.getElementById("totalSiswa").textContent = siswa.length;
+  document.getElementById("totalHadir").textContent = hitung("Hadir");
+  document.getElementById("totalIzin").textContent =
+    hitung("Izin") + hitung("Sakit");
+  document.getElementById("totalAlpa").textContent = hitung("Alpa");
+
+  document.getElementById("tanggalSekarang").textContent =
+    new Date().toLocaleDateString("id-ID", {
+      weekday:"long",
+      year:"numeric",
+      month:"long",
+      day:"numeric"
+    });
+}
+
+function refresh() {
+  tampilkanSiswa();
+  tampilkanRiwayat();
+  tampilkanLaporan();
+  updateDashboard();
+}
+
+// INISIALISASI
+document.getElementById("tanggalAbsen").value = tanggalHariIni();
+document.getElementById("tanggalLaporan").value = tanggalHariIni();
+
+refresh();
+
+</script>
+
+</body>
+</html>
